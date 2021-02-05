@@ -2,9 +2,11 @@ name: Docker Image Publish
 
 on:
   push:
-    branches: [ v3.1 ]
+    branches:
+      - v3.1
   pull_request:
-    branches: [ v3.1 ]
+    branches:
+      - v3.1
 
 jobs:
   build:
