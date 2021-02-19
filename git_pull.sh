@@ -43,7 +43,7 @@ function Git_PullShell {
   cd ${ShellDir}
   git fetch --all
   ExitStatusShell=$?
-  git reset --hard origin/v3
+  git reset --hard origin/v3.1
 }
 
 ## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
