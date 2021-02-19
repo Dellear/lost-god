@@ -38,7 +38,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && ln -sf ${JD_DIR}/rm_log.sh /usr/local/bin/rm_log \
     && ln -sf ${JD_DIR}/export_sharecodes.sh /usr/local/bin/export_sharecodes \
     && cp -f ${JD_DIR}/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh \
-    && cp -f ${JD_DIR}/tmp/jd_joy_reward_new.js ${JD_DIR}/scripts/jd_joy_reward_new.js \
+    && cp -f ${JD_DIR}/.tmp/jd_joy_reward_new.js ${JD_DIR}/scripts/jd_joy_reward_new.js \
     && chmod 777 /usr/local/bin/docker-entrypoint.sh \
     && rm -rf /root/.npm
 WORKDIR ${JD_DIR}
