@@ -34,6 +34,7 @@
             <header>
                 <h1>在线编辑工具</h1>
                 <button id="save" title="保存">保存 config.sh</button>
+                <button id="wrap" title="切换换行">切换换行</button>
                 <button id="cookietools" title="手机扫描二维码登录">扫码获取Cookie</button>
             </header>
             <h4>config.sh</h4>
@@ -156,6 +157,11 @@
                         window.location.reload(true);
                     })
                 });
+            });
+
+            $('#wrap').click(function () {
+                var lineWrapping = editor.getOption('lineWrapping');
+                editor.setOption('lineWrapping', !lineWrapping);
             });
         });
 
