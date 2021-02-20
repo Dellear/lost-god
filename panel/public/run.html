@@ -72,7 +72,7 @@
             $('.cmd-btn').click(function() {
                 if (timer) {
                     Swal.fire({
-                        text: '请等待上一条命令执行完毕。',
+                        text: '请等待上一条任务执行完毕。',
                         icon: 'error'
                     });
                     return;
@@ -102,9 +102,14 @@
             });
 
             $('#hangup, #resetpwd').click(function() {
+                const confirmTxt = this.id === 'hangup' ? '确认重启挂机程序？' : '重置用户名密码？'
+                if (!confirm(confirmTxt)) {
+                    return;
+                }
+
                 if (timer) {
                     Swal.fire({
-                        text: '请等待上一条命令执行完毕。',
+                        text: '请等待上一条任务执行完毕。',
                         icon: 'error'
                     });
                     return;
@@ -137,7 +142,7 @@
 
                 if (timer) {
                     Swal.fire({
-                        text: '请等待上一条命令执行完毕。',
+                        text: '请等待上一条任务执行完毕。',
                         icon: 'error'
                     });
                     return;
