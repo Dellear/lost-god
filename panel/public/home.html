@@ -7,7 +7,9 @@
     <title>在线编辑工具</title>
     <script type="text/javascript" src="./js/jquery.min.js"></script>
     <script type="text/javascript" src="./js/codemirror.min.js"></script>
+    <script type="text/javascript" src="./js/comment.js"></script>
     <script type="text/javascript" src="./js/shell.js"></script>
+    <script type="text/javascript" src="./js/sublime.js"></script>
     <script type="text/javascript" src="./js/sweetalert2.js"></script>
     <script type="text/javascript" src="./js/qrcode.min.js"></script>
     <link rel="stylesheet" type="text/css" href="./css/codemirror.min.css">
@@ -66,7 +68,8 @@
                 styleActiveLine: true,
                 matchBrackets: true,
                 mode: 'shell',
-                theme: 'dracula'
+                theme: 'dracula',
+                keyMap: 'sublime'
             });
             let timeStamp = (new Date()).getTime()
             $.get("./api/config/config?t="+timeStamp, function (data) {
