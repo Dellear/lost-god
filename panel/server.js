@@ -474,15 +474,19 @@ app.get('/run', function (request, response) {
 
 app.post('/runCmd', function(request, response) {
     const cmd = request.body.cmd;
+    const delay = request.body.delay || 0;
     exec(cmd, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`执行的错误: ${error}`);
-          response.send({ err: 1, msg: '执行出错！' });
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        response.send({ err: 0, msg: `${stdout}` });
-        console.error(`stderr: ${stderr}`);
+        // 至少1s后再返回数据
+        setTimeout(() => {
+            if (error) {
+                console.error(`执行的错误: ${error}`);
+                response.send({ err: 1, msg: '执行出错！' });
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+            response.send({ err: 0, msg: `${stdout}` });
+            console.error(`stderr: ${stderr}`);
+        }, delay);
     });
 });
 
