@@ -476,7 +476,7 @@ app.post('/runCmd', function(request, response) {
     const cmd = request.body.cmd;
     const delay = request.body.delay || 0;
     exec(cmd, (error, stdout, stderr) => {
-        // 至少1s后再返回数据
+        // 根据传入延时返回数据，有时太快会出问题
         setTimeout(() => {
             if (error) {
                 console.error(`执行的错误: ${error}`);
