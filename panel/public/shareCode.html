@@ -27,6 +27,7 @@
                     <li><a href="./diy">自定义脚本</a></li>
                     <li><a href="./run">手动执行</a></li>
                     <li><a href="./log">日志查询</a></li>
+                    <li><a href="./viewScripts">查看脚本</a></li>
                     <li><a href="./changepwd">修改密码</a></li>
                     <li><a href="./logout">退出</a></li>
                 </ul>
@@ -45,6 +46,8 @@
         </div>
     </div>
     <script>
+        $.ajaxSetup({ cache: false });
+
         $(document).ready(function () {
             var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
                 lineNumbers: true,
@@ -55,8 +58,7 @@
                 mode: 'text',
                 theme: 'dracula'
             });
-            let timeStamp = (new Date()).getTime()
-            $.get("./api/config/shareCode?t="+timeStamp, function (data) {
+            $.get('./api/config/shareCode', function (data) {
                 editor.setValue(data);
             });
         });

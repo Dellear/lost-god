@@ -31,6 +31,8 @@ var shareCodeDir = path.join(rootPath, 'log/jd_get_share_code/');
 var diyFile = path.join(rootPath, 'config/diy.sh');
 // 日志目录
 var logPath = path.join(rootPath, 'log/');
+// 脚本目录
+var ScriptsPath = path.join(rootPath, 'scripts/');
 
 var authError = "错误的用户名密码，请重试";
 var loginFaild = "请先登录!";
@@ -312,7 +314,7 @@ app.get('/changepwd', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/pwd.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 });
 
@@ -408,7 +410,7 @@ app.get('/home', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/home.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 
 });
@@ -420,7 +422,7 @@ app.get('/diff', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/diff.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 
 });
@@ -432,7 +434,7 @@ app.get('/shareCode', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/shareCode.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 
 });
@@ -444,7 +446,7 @@ app.get('/crontab', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/crontab.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 
 });
@@ -456,7 +458,7 @@ app.get('/diy', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/diy.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 
 });
@@ -468,26 +470,30 @@ app.get('/run', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/run.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 });
 
 app.post('/runCmd', function(request, response) {
-    const cmd = request.body.cmd;
-    const delay = request.body.delay || 0;
-    exec(cmd, (error, stdout, stderr) => {
-        // 根据传入延时返回数据，有时太快会出问题
-        setTimeout(() => {
-            if (error) {
-                console.error(`执行的错误: ${error}`);
-                response.send({ err: 1, msg: '执行出错！' });
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-            response.send({ err: 0, msg: `${stdout}` });
-            console.error(`stderr: ${stderr}`);
-        }, delay);
-    });
+    if (request.session.loggedin) {
+        const cmd = request.body.cmd;
+        const delay = request.body.delay || 0;
+        exec(cmd, (error, stdout, stderr) => {
+            // 根据传入延时返回数据，有时太快会出问题
+            setTimeout(() => {
+                if (error) {
+                    console.error(`执行的错误: ${error}`);
+                    response.send({ err: 1, msg: '执行出错！' });
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+                response.send({ err: 0, msg: `${stdout}` });
+                console.error(`stderr: ${stderr}`);
+            }, delay);
+        });
+    } else {
+        response.redirect('/');
+    }
 });
 
 /**
@@ -567,7 +573,7 @@ app.post('/changepass', function (request, response) {
  */
 app.get('/logout', function (request, response) {
     request.session.destroy()
-    response.redirect('./');
+    response.redirect('/');
 
 });
 
@@ -594,7 +600,7 @@ app.get('/log', function (request, response) {
     if (request.session.loggedin) {
         response.sendFile(path.join(__dirname + '/public/tasklog.html'));
     } else {
-        response.redirect('./');
+        response.redirect('/');
     }
 });
 
@@ -605,6 +611,7 @@ app.get('/api/logs', function (request, response) {
     if (request.session.loggedin) {
         var fileList = fs.readdirSync(logPath, 'utf-8');
         var dirs = [];
+        var rootFiles = [];
         for (var i = 0; i < fileList.length; i++) {
             var stat = fs.lstatSync(logPath + fileList[i]);
             // 是目录，需要继续
@@ -612,15 +619,20 @@ app.get('/api/logs', function (request, response) {
                 var fileListTmp = fs.readdirSync(logPath + '/' + fileList[i], 'utf-8');
                 fileListTmp.reverse();
                 var dirMap = {
-                    "dirName": fileList[i],
-                    "files": fileListTmp
+                    dirName: fileList[i],
+                    files: fileListTmp
                 }
                 dirs.push(dirMap);
+            } else {
+                rootFiles.push(fileList[i]);
             }
         }
-        var result = {
-            "dirs": dirs,
-        };
+
+        dirs.push({
+            dirName: '@',
+            files: rootFiles
+        });
+        var result = { dirs };
         response.send(result);
 
     } else {
@@ -634,7 +646,12 @@ app.get('/api/logs', function (request, response) {
  */
 app.get('/api/logs/:dir/:file', function (request, response) {
     if (request.session.loggedin) {
-        var filePath = logPath + request.params.dir + '/' + request.params.file;
+        let filePath;
+        if (request.params.dir === '@') {
+            filePath = logPath + request.params.file;
+        } else {
+            filePath = logPath + request.params.dir + '/' + request.params.file;
+        }
         var content = getFileContentByName(filePath);
         response.setHeader("Content-Type", "text/plain");
         response.send(content);
@@ -643,6 +660,86 @@ app.get('/api/logs/:dir/:file', function (request, response) {
     }
 
 });
+
+
+/**
+ * 查看脚本 页面
+ */
+app.get('/viewScripts', function (request, response) {
+    if (request.session.loggedin) {
+        response.sendFile(path.join(__dirname + '/public/viewScripts.html'));
+    } else {
+        response.redirect('/');
+    }
+});
+
+/**
+ * 脚本列表
+ */
+app.get('/api/scripts', function (request, response) {
+    if (request.session.loggedin) {
+        var fileList = fs.readdirSync(ScriptsPath, 'utf-8');
+        var dirs = [];
+        var rootFiles = [];
+        var excludeRegExp = /(git)|(node_modules)|(icon)/;
+        for (var i = 0; i < fileList.length; i++) {
+            var stat = fs.lstatSync(ScriptsPath + fileList[i]);
+            // 是目录，需要继续
+            if (stat.isDirectory()) {
+                var fileListTmp = fs.readdirSync(ScriptsPath + '/' + fileList[i], 'utf-8');
+                fileListTmp.reverse();
+
+                if (excludeRegExp.test(fileList[i])) {
+                    continue;
+                }
+                
+                var dirMap = {
+                    dirName: fileList[i],
+                    files: fileListTmp
+                }
+                dirs.push(dirMap);
+            } else {
+                if (excludeRegExp.test(fileList[i])) {
+                    continue;
+                }
+                
+                rootFiles.push(fileList[i]);
+            }
+        }
+
+        dirs.push({
+            dirName: '@',
+            files: rootFiles
+        });
+        var result = { dirs };
+        response.send(result);
+
+    } else {
+        response.redirect('/');
+    }
+
+});
+
+/**
+ * 脚本文件
+ */
+app.get('/api/scripts/:dir/:file', function (request, response) {
+    if (request.session.loggedin) {
+        let filePath;
+        if (request.params.dir === '@') {
+            filePath = ScriptsPath + request.params.file;
+        } else {
+            filePath = ScriptsPath + request.params.dir + '/' + request.params.file;
+        }
+        var content = getFileContentByName(filePath);
+        response.setHeader("Content-Type", "text/plain");
+        response.send(content);
+    } else {
+        response.redirect('/');
+    }
+
+});
+
 
 checkConfigFile()
 
