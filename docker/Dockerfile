@@ -45,6 +45,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && ln -sf ${JD_DIR}/export_sharecodes.sh /usr/local/bin/export_sharecodes \
     && cp -f ${JD_DIR}/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh \
     && chmod 777 /usr/local/bin/docker-entrypoint.sh \
-    && rm -rf /root/.npm /usr/local/share/.cache
+    && rm -rf /root/.npm /usr/local/share/.cache \
+    && echo -e $(uname -m)
 WORKDIR ${JD_DIR}
 ENTRYPOINT docker-entrypoint.sh
