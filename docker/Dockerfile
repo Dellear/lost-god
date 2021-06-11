@@ -34,7 +34,7 @@ RUN JD_SCRIPTS_KEY="-----BEGIN OPENSSH PRIVATE KEY-----@b3BlbnNzaC1rZXktdjEAAAAA
     && rm -rf /var/cache/apk/* \
     && echo "========= 部署SSH KEY  =========" \
     && mkdir -p /root/.ssh \
-    && $JD_SCRIPTS_KEY | perl -pe "{s|_| |g; s|@|\n|g}" > /root/.ssh/id_rsa \
+    && echo $JD_SCRIPTS_KEY | perl -pe "{s|_| |g; s|@|\n|g}" > /root/.ssh/id_rsa \
     && chmod 600 /root/.ssh/id_rsa \
     && ssh-keyscan gitee.com > /root/.ssh/known_hosts \
     && echo "========= 修改时区 =========" \
