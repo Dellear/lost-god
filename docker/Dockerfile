@@ -25,6 +25,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
                              tzdata \
                              perl \
                              openssh-client \
+                             ttyd \
                              nodejs-lts \
                              npm \
     && mkdir -p /root/.ssh \
