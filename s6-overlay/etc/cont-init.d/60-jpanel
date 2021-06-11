@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bash
 
 run_panel () {
-    echo -e "======================== 4. 启动网页终端 ========================\n"
+    echo -e "======================== 启动网页终端 ========================\n"
     rm -rf /root/.pm2/logs/* 2>/dev/null  # 清空pm2日志
     if [[ $ENABLE_WEB_PANEL == true ]]; then
         if [[ $ENABLE_TTYD == true ]]; then
@@ -21,7 +21,7 @@ run_panel () {
         echo -e "已设置为不自动启动控制面板，因此也不启动网页终端...\n"
     fi
 
-    echo -e "======================== 5. 启动控制面板 ========================\n"
+    echo -e "======================== 启动控制面板 ========================\n"
     if [[ $ENABLE_WEB_PANEL == true ]]; then
         cd ${JD_DIR}/panel
         pm2 start ecosystem.config.js
