@@ -1,6 +1,7 @@
 ## 目录
 dir_config=$dir_root/config
 dir_scripts=$dir_root/scripts
+dir_bot=$dir_root/jbot
 dir_own=$dir_root/own
 dir_raw=$dir_own/raw
 dir_sample=$dir_root/sample
@@ -14,9 +15,10 @@ file_config_sample=$dir_sample/config.sample.sh
 file_cookie=$dir_config/cookie.sh
 file_sharecode=$dir_config/sharecode.sh
 file_config_user=$dir_config/config.sh
-file_auth_sample=$dir_sample/auth.sample.json
-file_auth_user=$dir_config/auth.json
+file_bot_setting_sample=$dir_sample/bot.sample.json
+file_bot_setting_user=$dir_config/bot.json
 file_diy_shell=$dir_config/diy.sh
+file_task_finish_shell=$dir_config/task_finish.sh
 
 ## 清单文件
 list_crontab_user=$dir_config/crontab.list
@@ -47,6 +49,8 @@ env_name=(
     JDSGMH_SHARECODES
     JDCFD_SHARECODES
     JDHEALTH_SHARECODES
+    JD818_SHARECODES
+    CITY_SHARECODES
 )
 var_name=(
     Cookie
@@ -63,6 +67,8 @@ var_name=(
     ForOtherSgmh
     ForOtherCfd
     ForOtherHealth
+    ForOtherCarni
+    ForOtherCity
 )
 
 ## 所有有互助码的活动，把脚本名称列在 name_js 中，对应 config.sh 中互助码后缀列在 name_config 中，中文名称列在 name_chinese 中。
@@ -81,6 +87,8 @@ name_js=(
     jd_sgmh
     jd_cfd
     jd_health
+    jd_carnivalcity
+    jd_city
 )
 name_config=(
     Fruit
@@ -96,6 +104,8 @@ name_config=(
     Sgmh
     Cfd
     Health
+    Carni
+    City
 )
 name_chinese=(
     东东农场
@@ -111,6 +121,8 @@ name_chinese=(
     闪购盲盒
     京喜财富岛
     东东健康社区
+    京东手机狂欢城
+    城城领现金
 )
 
 ## 软连接及其原始文件对应关系
@@ -157,6 +169,35 @@ notify () {
     if [ -d $dir_scripts_node_modules ]; then
         node $dir_root/notify.js "$title" "$msg"
     fi
+}
+
+## 发送Telegram通知，$1：消息内容
+notify_telegram () {
+    local message="$(echo -e $1)"
+    local bot_token=$(cat $file_bot_setting_user | jq -r .bot_token)
+    local user_id=$(cat $file_bot_setting_user | jq .user_id)
+    local proxy=$(cat $file_bot_setting_user | jq .proxy)
+    local proxy_type=$(cat $file_bot_setting_user | jq -r .proxy_type)
+    local proxy_add=$(cat $file_bot_setting_user | jq -r .proxy_add)
+    local proxy_port=$(cat $file_bot_setting_user | jq .proxy_port)
+    local proxy_user=$(cat $file_bot_setting_user | jq -r .proxy_user)
+    local proxy_password=$(cat $file_bot_setting_user | jq -r .proxy_password)
+    local api_url="https://api.telegram.org/bot${bot_token}/sendMessage"
+    local cmd_proxy_user cmd_proxy
+
+    if [[ $proxy_user != *无则不用* ]] && [[ $proxy_password != *无则不用* ]]; then
+        cmd_proxy_user="--proxy-user $proxy_user:$proxy_password"
+    else
+        cmd_proxy_user=""
+    fi
+
+    if [[ $proxy == true ]]; then
+        cmd_proxy="--proxy $proxy_type://$proxy_add:$proxy_port $cmd_proxy_user"
+    else
+        cmd_proxy=""
+    fi
+
+    curl -Ss $cmd_proxy -H "Content-Type:application/x-www-form-urlencoded" -X POST -d "chat_id=${user_id}&text=${message}&disable_web_page_preview=true" "$api_url" &>/dev/null
 }
 
 ## 统计用户数量
@@ -272,4 +313,16 @@ update_crontab () {
     if [[ $(cat $list_crontab_user) != $(crontab -l) ]]; then
         crontab $list_crontab_user
     fi
+}
+
+## 生成pt_pin清单
+gen_pt_pin_array () {
+    local tmp1 tmp2 i pt_pin_temp
+    for ((user_num=1; user_num<=$user_sum; user_num++)); do
+        tmp1=Cookie$user_num
+        tmp2=${!tmp1}
+        i=$(($user_num - 1))
+        pt_pin_temp=$(echo $tmp2 | perl -pe "{s|.*pt_pin=([^; ]+)(?=;?).*|\1|; s|%|\\\x|g}")
+        [[ $pt_pin_temp == *\\x* ]] && pt_pin[i]=$(printf $pt_pin_temp) || pt_pin[i]=$pt_pin_temp
+    done
 }
