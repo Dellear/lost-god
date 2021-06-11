@@ -58,6 +58,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && if [ -d /etc/services.d ]; then rm -rf /etc/services.d; fi \
     && ln -sf $JD_DIR/s6-overlay/etc/cont-init.d /etc/cont-init.d \
     && ln -sf $JD_DIR/s6-overlay/etc/services.d /etc/services.d \
+    && chmod +x $JD_DIR/s6-overlay/etc/* \
     && echo "========= 清理 =========" \
     && rm -rf /root/.npm /var/cache/apk/*
 WORKDIR $JD_DIR
