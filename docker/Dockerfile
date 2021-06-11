@@ -1,4 +1,5 @@
-FROM node:lts-alpine
+FROM alpine
+COPY --from=nevinee/s6-overlay-stage:latest / /
 ARG JD_BASE_URL=https://github.com/Dellear/lost-god.git
 ARG JD_BASE_BRANCH=v4
 ARG JD_SCRIPTS_URL=git@gitee.com:dellear/jd_scripts.git
@@ -16,7 +17,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && apk upgrade \
     && apk --no-cache add -f bash \
                              coreutils \
-                             moreutils \
+                             diffutils \
                              git \
                              wget \
                              curl \
@@ -24,6 +25,8 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
                              tzdata \
                              perl \
                              openssh-client \
+                             nodejs-lts \
+                             npm \
     && mkdir -p /root/.ssh \
     && echo -e $KEY > /root/.ssh/id_rsa \
     && chmod 600 /root/.ssh/id_rsa \
@@ -31,20 +34,29 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && rm -rf /var/cache/apk/* \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
-    && git clone -b ${JD_BASE_BRANCH} ${JD_BASE_URL} ${JD_DIR} \
-    && cd ${JD_DIR}/panel \
+    && git config --global pull.ff only \
+    && git clone -b ${JD_BASE_BRANCH} ${JD_BASE_URL} $JD_DIR \
+    && cd $JD_DIR/panel \
     && npm config set registry https://registry.npm.taobao.org \
-    && yarn \
-    && git clone -b ${JD_SCRIPTS_BRANCH} ${JD_SCRIPTS_URL} ${JD_DIR}/scripts \
-    && cd ${JD_DIR}/scripts \
-    && yarn \
+    && npm install \
+    && git clone -b $JD_SCRIPTS_BRANCH $JD_SCRIPTS_URL $JD_DIR/scripts \
+    && cd $JD_DIR/scripts \
+    && npm install \
+    && echo "========= 安装PM2 =========" \
     && npm install -g pm2 \
-    && ln -sf ${JD_DIR}/jd.sh /usr/local/bin/jd \
-    && ln -sf ${JD_DIR}/git_pull.sh /usr/local/bin/git_pull \
-    && ln -sf ${JD_DIR}/rm_log.sh /usr/local/bin/rm_log \
-    && ln -sf ${JD_DIR}/export_sharecodes.sh /usr/local/bin/export_sharecodes \
-    && cp -f ${JD_DIR}/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh \
-    && chmod 777 /usr/local/bin/docker-entrypoint.sh \
-    && rm -rf /root/.npm /usr/local/share/.cache
-WORKDIR ${JD_DIR}
-ENTRYPOINT docker-entrypoint.sh
+    && echo "========= 创建软链接 =========" \
+    && ln -sf $JD_DIR/jtask.sh /usr/local/bin/jtask \
+    && ln -sf $JD_DIR/jtask.sh /usr/local/bin/otask \
+    && ln -sf $JD_DIR/jtask.sh /usr/local/bin/mtask \
+    && ln -sf $JD_DIR/jup.sh /usr/local/bin/jup \
+    && ln -sf $JD_DIR/jlog.sh /usr/local/bin/jlog \
+    && ln -sf $JD_DIR/jcode.sh /usr/local/bin/jcode \
+    && ln -sf $JD_DIR/jcsv.sh /usr/local/bin/jcsv \
+    && if [ -d /etc/cont-init.d ]; then rm -rf /etc/cont-init.d; fi \
+    && if [ -d /etc/services.d ]; then rm -rf /etc/services.d; fi \
+    && ln -sf $JD_DIR/s6-overlay/etc/cont-init.d /etc/cont-init.d \
+    && ln -sf $JD_DIR/s6-overlay/etc/services.d /etc/services.d \
+    && echo "========= 清理 =========" \
+    && rm -rf /root/.npm /var/cache/apk/*
+WORKDIR $JD_DIR
+ENTRYPOINT /init
