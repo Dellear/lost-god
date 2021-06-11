@@ -23,7 +23,7 @@
             <div class="elk-header">
                 <nav>
                     <ul>
-                        <li><a href="./home">首页</a></li>
+                        <li><a href="./home">配置设定</a></li>
                         <li><a href="./crontab">定时设定</a></li>
                         <li><a href="./diff">对比工具</a></li>
                         <li><a href="./diy">自定义脚本</a></li>
@@ -70,6 +70,7 @@
     <script src="https://cdn.jsdelivr.net/npm/elektron"></script>
     <script src="https://cdn.jsdelivr.net/npm/metismenu"></script>
     <script src="./js/codemirror.min.js"></script>
+    <script src="./js/sweetalert2.js"></script>
     <script>
         $.ajaxSetup({ cache: false });
 
@@ -79,52 +80,83 @@
                 lineNumbers: true,
                 lineWrapping: false,
                 styleActiveLine: true,
+                viewportMargin: Infinity,
                 matchBrackets: true,
                 readOnly: true,
                 mode: 'shell',
                 theme: 'dracula'
             });
-            
-            $.get('./api/logs', function (data) {
-                var dirs = data.dirs;
-                var navHtml = "";
-                for (let index in dirs) {
-                    var dirName = dirs[index].dirName;
-                    // 文件在log/目录时
-                    if (dirName === '@') {
-                        var row = `<li class="nav-item">`;
-                        for (let filesKey in dirs[index].files) {
-                            var fileName = dirs[index].files[filesKey];
-                            row += `<a class="nav-link" href="javascript:logDetail('${dirName}', '${fileName}');">${fileName}</a>`
-                        }
-                            row += `</li>`;
-                    } else {
-                        var row = `<li class="nav-item">
-                                <a class="nav-link text-dark has-arrow" href="#">${dirName}</a>
-                                <ul class="nav flex-column pl-1">
-                                    <li class="nav-item">`;
-                        for (let filesKey in dirs[index].files) {
-                            var fileName = dirs[index].files[filesKey];
-                            row += `<a class="nav-link" href="javascript:logDetail('${dirName}', '${fileName}');">${fileName}</a>`
-                        }
-                            row += `</li>
-                                    </ul>
-                                </li>`;
-                        }
-                    
-                    navHtml += row;
-                }
-                $('#menu1').html(navHtml);
-                $('#menu1').metisMenu();
-            });
+
+            initMenu();
+
+            function initMenu() {
+                $.get('./api/logs', function (data) {
+                    var dirs = data.dirs;
+                    var navHtml = "";
+                    for (let index in dirs) {
+                        var dirName = dirs[index].dirName;
+                        // 文件在log/目录时
+                        if (dirName === '@') {
+                            var row = `<li class="nav-item">`;
+                            for (let filesKey in dirs[index].files) {
+                                var fileName = dirs[index].files[filesKey];
+                                row += `<a class="nav-link" href="javascript:logDetail('${dirName}', '${fileName}');">${fileName}</a>`
+                            }
+                                row += `</li>`;
+                        } else {
+                            var row = `<li class="nav-item">
+                                    <a class="nav-link text-dark has-arrow" href="#">${dirName}</a>
+                                    <ul class="nav flex-column pl-1">
+                                        <li class="nav-item">`;
+                            for (let filesKey in dirs[index].files) {
+                                var fileName = dirs[index].files[filesKey];
+                                row += `<a class="nav-link sub-nav" href="javascript:logDetail('${dirName}', '${fileName}');">
+                                    ${fileName}
+                                    <span class="del-icon" onclick="delLog('${dirName}', '${fileName}')">✖</span>
+                                    </a>`
+                            }
+                                row += `</li>
+                                        </ul>
+                                    </li>`;
+                            }
+                        
+                        navHtml += row;
+                    }
+                    $('#menu1').html(navHtml);
+                    $('#menu1').metisMenu();
+                });
+            }
 
             window.logDetail = function logDetail(dir, file) {
+                console.log('logDetail')
                 if (window.innerWidth < 993) {
                     dispatch(document.getElementById('toggleIcon'), 'click');
                 }
 
                 $.get(`./api/logs/${dir}/${file}`, function (data) {
                     editor.setValue(data);
+                });
+            }
+
+            window.delLog = function(dir, file) {
+                var e=window.event || arguments.callee.caller.arguments[0];
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!confirm('确认删除' + file + '文件？')) {
+                    return;
+                }
+
+                $.get(`./api/rm_log/${dir}/${file}`, function (data) {
+                    var icon = (data.err == 0) ? "success" : "error"
+                    Swal.fire({
+                        text: data.msg,
+                        icon: icon
+                    });
+
+                    if (data.err == 0) {
+                        $(e.srcElement).parents('.sub-nav').remove();
+                    }
                 });
             }
 

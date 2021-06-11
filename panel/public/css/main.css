@@ -257,10 +257,19 @@ nav .active a {
     color: #343a40!important;
 }
 .nav-link {
+    justify-content: space-between;
     font-size: 18px;
     color: #007bff;
     text-decoration: none;
     background-color: transparent;
+}
+
+.elk-side-nav .metismenu ul a.nav-link {
+    padding-left: 2.5rem;
+}
+
+.del-icon {
+    color: #f00;
 }
 
 /* diff页面 */
@@ -305,7 +314,7 @@ nav .active a {
 }
 
 .cmd-section input {
-    width: 120px;
+    width: 200px;
 }
 
 /* chrome 滚动条 */

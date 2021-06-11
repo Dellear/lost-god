@@ -17,11 +17,11 @@ var { execSync, exec } = require('child_process');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 
-var rootPath = path.resolve(__dirname, '..')
+var rootPath = process.env.JD_DIR;
 // config.sh 文件所在目录
 var confFile = path.join(rootPath, 'config/config.sh');
-// config.sh.sample 文件所在目录
-var sampleFile = path.join(rootPath, 'sample/config.sh.sample');
+// config.sample.sh 文件所在目录
+var sampleFile = path.join(rootPath, 'sample/config.sample.sh');
 // crontab.list 文件所在目录
 var crontabFile = path.join(rootPath, 'config/crontab.list');
 // config.sh 文件备份目录
@@ -179,7 +179,7 @@ async function checkLogin() {
 
 
 /**
- * 检查 config.sh 以及 config.sh.sample 文件是否存在
+ * 检查 config.sh 以及 config.sample.sh 文件是否存在
  */
 function checkConfigFile() {
     if (!fs.existsSync(confFile)) {
@@ -187,7 +187,7 @@ function checkConfigFile() {
         process.exit(1);
     }
     if (!fs.existsSync(sampleFile)) {
-        console.error('脚本启动失败，config.sh.sample 文件不存在！');
+        console.error('脚本启动失败，config.sample.sh 文件不存在！');
         process.exit(1);
     }
 }
@@ -320,7 +320,12 @@ app.use('/shell', createProxyMiddleware({
     changeOrigin: true, 
     pathRewrite: {
         '^/shell': '/', 
-    }, 
+    },
+    onProxyReq(proxyReq, req, res) {
+        if (!req.session.loggedin) {
+            res.redirect('/');
+        }
+    }
 }));
 
 /**
@@ -515,8 +520,16 @@ app.get('/run', function (request, response) {
 
 app.post('/runCmd', function(request, response) {
     if (request.session.loggedin) {
+        if (!request.body.cmd || 
+            (!request.body.cmd.startsWith('bash ') &&
+            !request.body.cmd.startsWith('cat ') &&
+            !request.body.cmd === 'ps')) {
+                response.send({ err: 1, msg: '需要执行的命令暂不支持' });
+                return;
+            }
         const cmd = `cd ${rootPath};` + request.body.cmd;
         const delay = request.body.delay || 0;
+
         // console.log('before exec');
         // exec maxBuffer 20MB
         exec(cmd, { maxBuffer: 1024 * 1024 * 20 }, (error, stdout, stderr) => {
@@ -558,7 +571,7 @@ app.get('/runLog/:jsName', function (request, response) {
     if (request.session.loggedin) {
         const jsName = request.params.jsName;
         let shareCodeFile = getLastModifyFilePath(path.join(rootPath, `log/${jsName}/`));
-        if (jsName === 'rm_log') {
+        if (jsName === 'jlog') {
             shareCodeFile = path.join(rootPath, `log/${jsName}.log`)
         }
 
@@ -723,6 +736,31 @@ app.get('/api/logs/:dir/:file', function (request, response) {
 
 
 /**
+ * 删除单个日志文件
+ */
+ app.get('/api/rm_log/:dir/:file', function (request, response) {
+    if (request.session.loggedin) {
+        let filePath;
+        if (request.params.dir === '@') {
+            filePath = logPath + request.params.file;
+        } else {
+            filePath = logPath + request.params.dir + '/' + request.params.file;
+        }
+        fs.unlink(filePath, function(err) {
+            if (err) {
+                response.send({ err: 1, msg: "日志文件删除失败!" });
+            } else {
+                response.send({ err: 0, msg: "日志文件删除成功!" });
+            }
+        });
+    } else {
+        response.redirect('/');
+    }
+
+});
+
+
+/**
  * 查看脚本 页面
  */
 app.get('/viewScripts', function (request, response) {
@@ -741,7 +779,7 @@ app.get('/api/scripts', function (request, response) {
         var fileList = fs.readdirSync(ScriptsPath, 'utf-8');
         var dirs = [];
         var rootFiles = [];
-        var excludeRegExp = /(git)|(node_modules)|(icon)/;
+        var excludeRegExp = /(.git)|(node_modules)|(icon)/;
         for (var i = 0; i < fileList.length; i++) {
             var stat = fs.lstatSync(ScriptsPath + fileList[i]);
             // 是目录，需要继续
