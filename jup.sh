@@ -442,7 +442,7 @@ update_shell () {
     ## 记录bot程序md5
     # jbot_md5sum_old=$(cd $dir_bot; find . -type f \( -name "*.py" -o -name "*.ttf" \) | xargs md5sum)
 
-    rm -rf $dir_shell/.git &>/dev/null
+    # rm -rf $dir_shell/.git &>/dev/null
 }
 
 
