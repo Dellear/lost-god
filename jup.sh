@@ -5,7 +5,8 @@ dir_shell=$(dirname $(readlink -f "$0"))
 dir_root=$dir_shell
 # url_shell=${JD_SHELL_URL:-git@jd_shell_gitee:evine/jd_shell.git}
 # url_scripts=${JD_SCRIPTS_URL:-git@jd_scripts_gitee:lxk0301/jd_scripts.git}
-url_scripts=${git@gitee.com:dellear/jd_scripts.git}
+url_scripts="git@gitee.com:dellear/jd_scripts.git"
+url_scripts_branch="master"
 send_mark=$dir_shell/send_mark
 
 ## 导入通用变量与函数
@@ -48,11 +49,12 @@ reset_romote_url () {
     local dir_current=$(pwd)
     local dir_work=$1
     local url=$2
+    local branch=$3
 
     if [ -d "$dir_work/.git" ]; then
         cd $dir_work
         git remote set-url origin $url >/dev/null
-        git reset --hard >/dev/null
+        git reset --hard origin/$branch >/dev/null
         cd $dir_current
     fi
 }
@@ -72,11 +74,12 @@ git_clone_scripts () {
 git_pull_scripts () {
     local dir_current=$(pwd)
     local dir_work=$1
+    local branch=$2
     cd $dir_work
     echo -e "开始更新仓库：$dir_work\n"
     git fetch --all
     exit_status=$?
-    git reset --hard
+    git reset --hard origin/$branch
     git pull
     cd $dir_current
 }
@@ -360,8 +363,8 @@ update_own_repo () {
     [[ ${#array_own_repo_url[*]} -gt 0 ]] && echo -e "--------------------------------------------------------------\n"
     for ((i=0; i<${#array_own_repo_url[*]}; i++)); do
         if [ -d ${array_own_repo_path[i]}/.git ]; then
-            reset_romote_url ${array_own_repo_path[i]} ${array_own_repo_url[i]}
-            git_pull_scripts ${array_own_repo_path[i]}
+            reset_romote_url ${array_own_repo_path[i]} ${array_own_repo_url[i]} ${array_own_repo_branch[i]}
+            git_pull_scripts ${array_own_repo_path[i]} ${array_own_repo_branch[i]}
         else
             git_clone_scripts ${array_own_repo_url[i]} ${array_own_repo_path[i]} ${array_own_repo_branch[i]}
         fi
@@ -432,7 +435,7 @@ update_shell () {
 
     ## 重置仓库romote url
     if [[ $JD_DIR ]] && [[ $ENABLE_RESET_REPO_URL == true ]]; then
-        reset_romote_url $dir_scripts $url_scripts
+        reset_romote_url $dir_scripts $url_scripts $url_scripts_branch
     fi
 
     ## 记录bot程序md5
@@ -451,9 +454,9 @@ update_scripts () {
 
     ## 更新或克隆scripts
     if [ -d $dir_scripts/.git ]; then
-        git_pull_scripts $dir_scripts
+        git_pull_scripts $dir_scripts $url_scripts_branch
     else
-        git_clone_scripts $url_scripts $dir_scripts "master"
+        git_clone_scripts $url_scripts $dir_scripts $url_scripts_branch
     fi
 
     if [[ $exit_status -eq 0 ]]; then
