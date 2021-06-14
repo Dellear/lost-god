@@ -53,7 +53,6 @@ reset_romote_url () {
 
     if [ -d "$dir_work/.git" ]; then
         cd $dir_work
-        echo "aaa  git remote set-url origin $url"
         git remote set-url origin $url >/dev/null
         git reset --hard origin/$branch >/dev/null
         cd $dir_current
