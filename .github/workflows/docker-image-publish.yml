@@ -3,7 +3,7 @@ name: Docker Image Publish
 on:
   push:
     branches:
-      - v4
+      - hello-world
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
           imageName: dellear/lost-god
           dockerFile: docker/Dockerfile
           platform: linux/amd64,linux/arm64,linux/arm/v7
-          tag: latest
+          tag: hello-world
           dockerUser: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Update repo description
