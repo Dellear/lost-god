@@ -46,7 +46,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && cd $JD_DIR/panel \
     && npm install \
     && git clone -b $JD_SCRIPTS_BRANCH $JD_SCRIPTS_URL $JD_DIR/scripts \
-    && unzip -o $JD_DIR/scripts-docker.zip -d $JD_DIR/scripts \
     && cd $JD_DIR/scripts \
     && npm install \
     && echo "========= 安装PM2 =========" \
@@ -66,5 +65,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && chmod -R +x $JD_DIR/s6-overlay/etc/* \
     && echo "========= 清理 =========" \
     && rm -rf /root/.npm /var/cache/apk/*
+COPY --from=dellear/lost-god /jd/scripts/docker /jd/scripts/docker
 WORKDIR $JD_DIR
 ENTRYPOINT /init
