@@ -44,7 +44,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && git config --global pull.ff only \
     && git clone -b ${JD_BASE_BRANCH} ${JD_BASE_URL} $JD_DIR \
     && cd $JD_DIR/panel \
-    && npm config set registry https://registry.npm.taobao.org \
     && npm install \
     && git clone -b $JD_SCRIPTS_BRANCH $JD_SCRIPTS_URL $JD_DIR/scripts \
     && unzip -o $JD_DIR/scripts-docker.zip -d $JD_DIR/scripts \
