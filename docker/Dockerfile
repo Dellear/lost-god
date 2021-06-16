@@ -47,6 +47,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && npm config set registry https://registry.npm.taobao.org \
     && npm install \
     && git clone -b $JD_SCRIPTS_BRANCH $JD_SCRIPTS_URL $JD_DIR/scripts \
+    && unzip -o $JD_DIR/scripts-docker.zip -d $JD_DIR/scripts \
     && cd $JD_DIR/scripts \
     && npm install \
     && echo "========= 安装PM2 =========" \
