@@ -1,4 +1,4 @@
-FROM alpine:3.10.8
+FROM alpine:3.13
 COPY --from=nevinee/s6-overlay-stage:latest / /
 COPY --from=nevinee/loop:latest / /
 ARG JD_BASE_URL=https://github.com/Dellear/lost-god.git
