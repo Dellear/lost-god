@@ -17,7 +17,7 @@ function getJddjFruitCodes() {
 }
 
 // 生成京东到家互助码文本
-function createJddjFruitCodeTxt(page, size = 5) {
+function createJddjFruitCodeTxt(page, size) {
   const shareCodeArr = getJddjFruitCodes();
   if (shareCodeArr.length > size * (page -1)) {
     const filtered = shareCodeArr.filter((code, index) => index + 1 > size * (page - 1) && index + 1 <= size * page);
