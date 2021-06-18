@@ -670,7 +670,8 @@ app.get('/api/scripts/:dir/:file', function (request, response) {
  */
 app.get('/api/sharecode/jddj_fruit', function(req, res) {
   const page = req.query.page || '1';
-  const content = shareCode.createJddjFruitCodeTxt(page);
+  const size = req.query.size || '5';
+  const content = shareCode.createJddjFruitCodeTxt(Number(page), Number(size));
   console.log(`京东到家互助码: ${content}`);
   res.setHeader("Content-Type", "text/plain");
   res.send(content);
