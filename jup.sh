@@ -435,11 +435,8 @@ update_shell () {
     random_update_jup_cron
 
     ## 更新shell代码
-    if [[ $JD_DIR ]]; then
-        cd $JD_DIR
-        echo -e "开始脚本仓库：$dir_root\n"
-        git pull
-    fi
+    echo -e "开始脚本仓库：$dir_root\n"
+    git pull
 
     ## 重置仓库romote url
     if [[ $JD_DIR ]] && [[ $ENABLE_RESET_REPO_URL == true ]]; then

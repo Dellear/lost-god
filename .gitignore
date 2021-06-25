@@ -10,3 +10,5 @@
 /jbot/__pycache__/
 /jbot/bot/__pycache__/
 /*session*
+*/node_modules/
+nohup.out
