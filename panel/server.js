@@ -678,7 +678,7 @@ app.get('/api/sharecode/jddj_fruit', function(req, res) {
 });
 
 
-checkConfigFile()
+checkConfigFile();
 
 app.listen(5678, () => {
   console.log('应用正在监听 5678 端口!');
