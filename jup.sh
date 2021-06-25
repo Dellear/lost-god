@@ -3,7 +3,7 @@
 ## 文件路径、脚本网址
 dir_shell=$(dirname $(readlink -f "$0"))
 dir_root=$dir_shell
-# url_shell=${JD_SHELL_URL:-git@jd_shell_gitee:evine/jd_shell.git}
+url_shell="https://github.com/Dellear/lost-god.git"
 # url_scripts=${JD_SCRIPTS_URL:-git@jd_scripts_gitee:lxk0301/jd_scripts.git}
 url_scripts="git@gitee.com:dellear/jd_scripts.git"
 url_scripts_branch="master"
@@ -433,6 +433,13 @@ update_shell () {
     echo -e "--------------------------------------------------------------\n"
     ## 更新jup任务的cron
     random_update_jup_cron
+
+    ## 更新shell代码
+    if [[ $JD_DIR ]]; then
+        cd $JD_DIR
+        echo -e "开始脚本仓库：$dir_root\n"
+        git pull
+    fi
 
     ## 重置仓库romote url
     if [[ $JD_DIR ]] && [[ $ENABLE_RESET_REPO_URL == true ]]; then
