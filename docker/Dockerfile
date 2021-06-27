@@ -63,8 +63,8 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && ln -sf $JD_DIR/s6-overlay/etc/cont-init.d /etc/cont-init.d \
     && ln -sf $JD_DIR/s6-overlay/etc/services.d /etc/services.d \
     && chmod -R +x $JD_DIR/s6-overlay/etc/* \
+    && chmod -R +x /usr/local/bin/* \
     && echo "========= 清理 =========" \
     && rm -rf /root/.npm /var/cache/apk/*
-COPY --from=dellear/lost-god /jd/scripts/docker /jd/scripts/docker
 WORKDIR $JD_DIR
 ENTRYPOINT /init
