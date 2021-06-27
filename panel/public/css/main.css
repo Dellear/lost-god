@@ -211,7 +211,7 @@ nav .active a {
     cursor: pointer;
 }
 
-@media screen and (max-width: 480px) {
+@media all and (max-width: 480px) {
 
     nav ul li a:link,
     nav ul li a:visited,
@@ -235,7 +235,7 @@ nav .active a {
     height: 100vh;
     margin: 0 .5em;
 }
-@media (min-width: 992px) {
+@media all and (min-width: 992px) {
     .elk-app {
         height: 100%;
     }
@@ -270,6 +270,19 @@ nav .active a {
 
 .del-icon {
     color: #f00;
+}
+
+/* 首页 */
+@media (min-width: 992px) {
+    .replace-cookie-form input {
+        width: 450px;
+    }
+}
+
+@media all and (max-width: 480px) {
+    .replace-cookie-form input {
+        width: 200px;
+    }
 }
 
 /* diff页面 */
