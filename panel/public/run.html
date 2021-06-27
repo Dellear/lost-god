@@ -45,7 +45,6 @@
                 <button id="ps" title="查看进程">查看进程</button>
                 <button id="jd-crazy-joy-coin" title="查看挂机日志">查看挂机日志</button>
                 <button id="hangup" title="重启挂机程序">重启挂机程序</button>
-                <button id="resetpwd" title="重置用户名密码">重置用户名密码</button>
                 <br/>
                 <form class="run-cmd-form">
                     <div class="cmd-section">
@@ -130,7 +129,7 @@
                 }, 1000);
             });
 
-            $('#hangup, #resetpwd, #jcode, #jup, #ps, #jd-crazy-joy-coin').click(function() {
+            $('#hangup, #jcode, #jup, #ps, #jd-crazy-joy-coin').click(function() {
                 let confirmTxt, cmd;
                 switch (this.id) {
                     case 'jup':
@@ -151,10 +150,6 @@
                         break;
                     case 'hangup':
                         confirmTxt = '确认重启挂机程序？';
-                        cmd = `bash jtask.sh ${this.id}`;
-                        break;
-                    case 'resetpwd':
-                        confirmTxt = '重置用户名密码？';
                         cmd = `bash jtask.sh ${this.id}`;
                         break;
                     default:
