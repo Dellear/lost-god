@@ -45,6 +45,12 @@
                     <input type="checkbox" id="autoReplace" checked="checked">
                     <label for="autoReplace">扫码后自动替换Cookie</label>
                 </span>
+                <br/>
+                <form class="replace-cookie-form">
+                    <button id="getCookie">获取Cookie</button>
+                    <input id="jdCookie" name="jdCookie" type="text" autocomplete="off" placeholder="复制Cookie后，粘贴到这里" required>
+                    <button id="replaceCookie">替换</button>
+                </form>
             </header>
             <h4>config.sh</h4>
             <div class="wrapper">
@@ -68,7 +74,7 @@
     <script>
         $.ajaxSetup({ cache: false });
 
-        var qrcode, userCookie;
+        var qrcode, userCookie, timeId;
         $(document).ready(function () {
             var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
                 lineNumbers: true,
@@ -123,7 +129,7 @@
 
 
             function checkLogin() {
-                var timeId = setInterval(() => {
+                timeId = setInterval(() => {
                     $.get('./cookie', function (data) {
                         if (data.err == 0) {
                             clearInterval(timeId);
@@ -132,30 +138,7 @@
                             userCookie = data.cookie
                             var isAutoReplace = $('#autoReplace').prop('checked');
                             if (isAutoReplace) {
-                                if (autoReplace(userCookie)) {
-                                    Swal.fire({
-                                        title: "cookie已获取(2s后自动替换)",
-                                        html:
-                                            '<div class="cookieCon" style="font-size:12px;">' + userCookie + '</div>',
-                                        icon: "success",
-                                        showConfirmButton: false,
-                                    });
-
-                                    setTimeout(() => {
-                                        $('#save').trigger('click');
-                                    }, 2000);
-                                } else {
-                                    Swal.fire({
-                                        title: "cookie已获取",
-                                        html:
-                                            '<div class="cookieCon" style="font-size:16px;font-weight: bold;">自动替换失败，请复制Cookie后手动更新。</div>' +
-                                            '<div class="cookieCon" style="font-size:12px;">' + userCookie + '</div>',
-                                        icon: "success",
-                                        confirmButtonText: "复制Cookie",
-                                    }).then((result) => {
-                                        copyToClip(userCookie);
-                                    });
-                                }
+                                autoReplaceCookie(userCookie);
                             } else {
                                 Swal.fire({
                                     title: "cookie已获取",
@@ -194,6 +177,46 @@
                 });
             }
 
+            // 自动替换cookie，传入新的cookie
+            function autoReplaceCookie(userCookie) {
+                if (autoReplace(userCookie)) {
+                    Swal.fire({
+                        title: "cookie已获取(2s后自动替换)",
+                        html:
+                            '<div class="cookieCon" style="font-size:12px;">' + userCookie + '</div>',
+                        icon: "success",
+                        showConfirmButton: false,
+                    });
+
+                    setTimeout(() => {
+                        $('#save').trigger('click');
+                    }, 2000);
+                } else {
+                    Swal.fire({
+                        title: "cookie已获取",
+                        html:
+                            '<div class="cookieCon" style="font-size:16px;font-weight: bold;">自动替换失败，请复制Cookie后手动更新。</div>' +
+                            '<div class="cookieCon" style="font-size:12px;">' + userCookie + '</div>',
+                        icon: "success",
+                        confirmButtonText: "复制Cookie",
+                    }).then((result) => {
+                        copyToClip(userCookie);
+                    });
+                }
+            }
+
+            $('#replaceCookie').click(() => {
+                const userCookie = $('#jdCookie').val();
+                if (!userCookie) return;
+                autoReplaceCookie(userCookie);
+                return false;
+            });
+
+            $('#getCookie').click(() => {
+                window.open('https://bean.m.jd.com', '_blank');
+                return false;
+            });
+
             $('.refresh').click(get_code);
 
             $('#cookietools').click(get_code);
@@ -201,6 +224,9 @@
             $('.qframe-close').click(function () {
                 $("#qrcontainer").addClass("hidden");
                 $("#refresh_qrcode").addClass("hidden");
+                if (timeId) {
+                    clearInterval(timeId);
+                }
             });
 
             $('#save').click(function () {
